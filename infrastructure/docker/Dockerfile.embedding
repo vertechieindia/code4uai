@@ -1,0 +1,30 @@
+# Embedding service for code4u.ai
+# Self-hosted BGE-large for code embeddings
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies
+RUN pip install --no-cache-dir \
+    sentence-transformers==2.2.2 \
+    fastapi==0.109.0 \
+    uvicorn[standard]==0.27.0 \
+    torch==2.1.2
+
+# Copy embedding service
+COPY backend/src/code4u/embeddings /app/embeddings
+
+# Create model cache
+RUN mkdir -p /cache/models
+ENV TRANSFORMERS_CACHE=/cache/models
+ENV SENTENCE_TRANSFORMERS_HOME=/cache/models
+
+# Pre-download model
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-large-en-v1.5')"
+
+# Expose port
+EXPOSE 8002
+
+# Start server
+CMD ["python", "-m", "embeddings.server"]
+

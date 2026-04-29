@@ -1,0 +1,143 @@
+<idea-plugin>
+    <id>ai.code4u.plugin</id>
+    <name>code4u.ai</name>
+    <vendor email="support@code4u.ai" url="https://code4u.ai">code4u.ai</vendor>
+
+    <description><![CDATA[
+    <h2>code4u.ai - Deterministic AI Engineering Platform</h2>
+    <p>The AI engineering platform that executes verified changes at enterprise scale.</p>
+    
+    <h3>Features:</h3>
+    <ul>
+        <li><b>Intelligent Autocomplete</b> - Context-aware code suggestions powered by Knowledge Graph</li>
+        <li><b>Tab Completion</b> - Multi-line edits and smart rewrites</li>
+        <li><b>Agent Mode</b> - Delegate coding tasks with deterministic execution</li>
+        <li><b>Refactoring</b> - Safe, validated refactors across your codebase</li>
+        <li><b>Contract Validation</b> - Every change verified against explicit contracts</li>
+    </ul>
+    
+    <h3>Enterprise Features:</h3>
+    <ul>
+        <li>SOC 2 Type II Certified</li>
+        <li>No-AI Zones for sensitive code</li>
+        <li>Immutable audit logs</li>
+        <li>Self-hosted deployment option</li>
+    </ul>
+    ]]></description>
+
+    <change-notes><![CDATA[
+    <h3>1.0.0</h3>
+    <ul>
+        <li>Initial release</li>
+        <li>Autocomplete and Tab completion</li>
+        <li>Agent mode integration</li>
+        <li>Knowledge Graph powered suggestions</li>
+    </ul>
+    ]]></change-notes>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Settings -->
+        <applicationConfigurable 
+            parentId="tools" 
+            instance="ai.code4u.plugin.settings.Code4uConfigurable"
+            id="ai.code4u.plugin.settings.Code4uConfigurable"
+            displayName="code4u.ai"/>
+        
+        <applicationService 
+            serviceImplementation="ai.code4u.plugin.settings.Code4uSettings"/>
+
+        <!-- Completion -->
+        <completion.contributor 
+            language="any"
+            implementationClass="ai.code4u.plugin.completion.Code4uCompletionContributor"
+            order="first"/>
+        
+        <!-- Inline Completion (Tab) -->
+        <inlineCompletionProvider
+            implementation="ai.code4u.plugin.completion.Code4uInlineCompletionProvider"/>
+
+        <!-- Editor Typing Handler -->
+        <typedHandler 
+            implementation="ai.code4u.plugin.completion.Code4uTypedHandler"/>
+
+        <!-- Tool Window -->
+        <toolWindow 
+            id="code4u.ai" 
+            anchor="right" 
+            factoryClass="ai.code4u.plugin.ui.Code4uToolWindowFactory"
+            icon="/icons/code4u.svg"/>
+
+        <!-- Status Bar Widget -->
+        <statusBarWidgetFactory 
+            id="code4u.statusBar"
+            implementation="ai.code4u.plugin.ui.Code4uStatusBarWidgetFactory"/>
+
+        <!-- Notifications -->
+        <notificationGroup 
+            id="code4u.notifications" 
+            displayType="BALLOON"/>
+    </extensions>
+
+    <actions>
+        <!-- Agent Actions -->
+        <group id="code4u.AgentMenu" text="code4u.ai" popup="true">
+            <add-to-group group-id="ToolsMenu" anchor="first"/>
+            
+            <action id="code4u.RefactorAction" 
+                    class="ai.code4u.plugin.actions.RefactorAction"
+                    text="Refactor with code4u" 
+                    description="Refactor selected code using code4u.ai"
+                    icon="/icons/refactor.svg">
+                <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt R"/>
+            </action>
+            
+            <action id="code4u.ExplainAction" 
+                    class="ai.code4u.plugin.actions.ExplainAction"
+                    text="Explain Code" 
+                    description="Explain selected code using code4u.ai">
+                <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt E"/>
+            </action>
+            
+            <action id="code4u.GenerateAction" 
+                    class="ai.code4u.plugin.actions.GenerateAction"
+                    text="Generate Code" 
+                    description="Generate code from description">
+                <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt G"/>
+            </action>
+            
+            <action id="code4u.ChatAction" 
+                    class="ai.code4u.plugin.actions.ChatAction"
+                    text="Open Agent Chat" 
+                    description="Open code4u.ai agent chat">
+                <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt C"/>
+            </action>
+            
+            <separator/>
+            
+            <action id="code4u.AnalyzeImpactAction" 
+                    class="ai.code4u.plugin.actions.AnalyzeImpactAction"
+                    text="Analyze Impact" 
+                    description="Analyze impact of changes"/>
+        </group>
+
+        <!-- Editor Context Menu -->
+        <group id="code4u.EditorContextMenu">
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+            <reference ref="code4u.RefactorAction"/>
+            <reference ref="code4u.ExplainAction"/>
+            <separator/>
+        </group>
+
+        <!-- Inline Completion Toggle -->
+        <action id="code4u.ToggleAutocomplete"
+                class="ai.code4u.plugin.actions.ToggleAutocompleteAction"
+                text="Toggle code4u Autocomplete"
+                description="Enable/disable code4u autocomplete">
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt A"/>
+        </action>
+    </actions>
+</idea-plugin>
+

@@ -1,0 +1,183 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: code4u-worker
+  namespace: code4u
+  labels:
+    app: code4u
+    component: worker
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: code4u
+      component: worker
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: code4u
+        component: worker
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: code4u-worker
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: worker
+          image: code4u/worker:latest
+          args: ["--mode", "worker", "--concurrency", "4"]
+          env:
+            - name: ENVIRONMENT
+              value: "production"
+            - name: WORKER_MODE
+              value: "swarm"
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: code4u-secrets
+                  key: redis-url
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: code4u-secrets
+                  key: database-url
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: code4u-secrets
+                  key: anthropic-api-key
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: code4u-secrets
+                  key: openai-api-key
+                  optional: true
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: code4u-secrets
+                  key: github-token
+                  optional: true
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: code4u-config
+                  key: otel-endpoint
+                  optional: true
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2000m"
+              memory: "4Gi"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: workspace-scratch
+              mountPath: /tmp/workspaces
+            - name: tmp
+              mountPath: /tmp
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9090
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 9090
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        - name: workspace-scratch
+          emptyDir:
+            sizeLimit: 10Gi
+        - name: tmp
+          emptyDir: {}
+      terminationGracePeriodSeconds: 120
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: code4u-worker
+  namespace: code4u
+  labels:
+    app: code4u
+    component: worker
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9090
+      targetPort: 9090
+      protocol: TCP
+      name: metrics
+  selector:
+    app: code4u
+    component: worker
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: code4u-worker-hpa
+  namespace: code4u
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: code4u-worker
+  minReplicas: 2
+  maxReplicas: 30
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 75
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+        - type: Pods
+          value: 3
+          periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: code4u-worker
+  namespace: code4u
+  labels:
+    app: code4u
+    component: worker

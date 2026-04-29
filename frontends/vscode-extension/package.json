@@ -1,0 +1,122 @@
+{
+  "name": "code4u-ai",
+  "displayName": "code4u.ai",
+  "description": "AI-Native Engineering Platform for Enterprise-Scale Development",
+  "version": "1.0.0",
+  "publisher": "code4u-ai",
+  "icon": "images/icon.png",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Programming Languages", "Machine Learning", "Linters", "Other"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "code4u.showQuickActions", "title": "Show Quick Actions", "category": "code4u", "icon": "$(zap)" },
+      { "command": "code4u.connect", "title": "Connect to code4u.ai", "category": "code4u" },
+      { "command": "code4u.refactor", "title": "Refactor with AI", "category": "code4u", "icon": "$(edit)" },
+      { "command": "code4u.generate", "title": "Generate Code", "category": "code4u", "icon": "$(code)" },
+      { "command": "code4u.fixBug", "title": "Fix Bug", "category": "code4u", "icon": "$(bug)" },
+      { "command": "code4u.explain", "title": "Explain Code", "category": "code4u", "icon": "$(comment-discussion)" },
+      { "command": "code4u.analyzeImpact", "title": "Analyze Change Impact", "category": "code4u", "icon": "$(search)" },
+      { "command": "code4u.showOwnership", "title": "Show Code Ownership", "category": "code4u", "icon": "$(organization)" },
+      { "command": "code4u.renameSymbol", "title": "Rename Symbol Across Repos", "category": "code4u", "icon": "$(symbol-method)" },
+      { "command": "code4u.refactorSymbol", "title": "Refactor Symbol", "category": "code4u", "icon": "$(wand)" },
+      { "command": "code4u.healthCheck", "title": "Run Health Check", "category": "code4u", "icon": "$(heart)" },
+      { "command": "code4u.openChat", "title": "Open Chat", "category": "code4u", "icon": "$(comment)" },
+      { "command": "code4u.acceptChanges", "title": "Accept All Changes", "category": "code4u", "icon": "$(check)" },
+      { "command": "code4u.rejectChanges", "title": "Reject All Changes", "category": "code4u", "icon": "$(x)" },
+      { "command": "code4u.rollback", "title": "Rollback Last Change", "category": "code4u", "icon": "$(discard)" },
+      { "command": "code4u.toggleAutocomplete", "title": "Toggle Autocomplete", "category": "code4u" }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "type": "webview",
+          "id": "code4u.chatView",
+          "name": "code4u.ai Chat"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "code4u",
+          "title": "code4u.ai",
+          "icon": "images/code4u.svg"
+        }
+      ]
+    },
+    "menus": {
+      "editor/context": [
+        { "command": "code4u.refactorSymbol", "group": "code4u@0", "when": "editorTextFocus" },
+        { "command": "code4u.renameSymbol", "group": "code4u@1", "when": "editorTextFocus" },
+        { "command": "code4u.refactor", "group": "code4u@2", "when": "editorTextFocus" },
+        { "command": "code4u.explain", "group": "code4u@3", "when": "editorHasSelection" },
+        { "command": "code4u.fixBug", "group": "code4u@4", "when": "editorTextFocus" },
+        { "command": "code4u.analyzeImpact", "group": "code4u@5", "when": "editorTextFocus" },
+        { "command": "code4u.healthCheck", "group": "code4u@6", "when": "editorTextFocus" }
+      ],
+      "editor/title": [
+        { "command": "code4u.showQuickActions", "group": "navigation" }
+      ]
+    },
+    "configuration": {
+      "title": "code4u.ai",
+      "properties": {
+        "code4u.serverUrl": { 
+          "type": "string", 
+          "default": "http://localhost:8000", 
+          "description": "URL of the code4u.ai server" 
+        },
+        "code4u.autoConnect": { 
+          "type": "boolean", 
+          "default": true, 
+          "description": "Automatically connect on startup" 
+        },
+        "code4u.enableAutocomplete": { 
+          "type": "boolean", 
+          "default": true, 
+          "description": "Enable AI-powered inline completions" 
+        },
+        "code4u.showInlineDiffs": { 
+          "type": "boolean", 
+          "default": true, 
+          "description": "Show inline diff previews" 
+        },
+        "code4u.breakingChangeAlerts": { 
+          "type": "boolean", 
+          "default": true, 
+          "description": "Alert on breaking changes" 
+        },
+        "code4u.completionDelay": {
+          "type": "number",
+          "default": 300,
+          "description": "Delay in ms before showing completions"
+        }
+      }
+    },
+    "keybindings": [
+      { "command": "code4u.showQuickActions", "key": "ctrl+shift+a", "mac": "cmd+shift+a" },
+      { "command": "code4u.refactor", "key": "ctrl+shift+r", "mac": "cmd+shift+r", "when": "editorTextFocus" },
+      { "command": "code4u.generate", "key": "ctrl+shift+g", "mac": "cmd+shift+g", "when": "editorTextFocus" },
+      { "command": "code4u.explain", "key": "ctrl+shift+e", "mac": "cmd+shift+e", "when": "editorHasSelection" },
+      { "command": "code4u.analyzeImpact", "key": "ctrl+shift+i", "mac": "cmd+shift+i", "when": "editorTextFocus" },
+      { "command": "code4u.openChat", "key": "ctrl+shift+c", "mac": "cmd+shift+c" }
+    ]
+  },
+  "scripts": {
+    "build": "tsup src/extension.ts --external vscode --format cjs --dts",
+    "dev": "tsup src/extension.ts --external vscode --format cjs --dts --watch",
+    "package": "vsce package --no-dependencies",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": { 
+    "ws": "^8.16.0" 
+  }
+}

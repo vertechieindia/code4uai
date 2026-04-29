@@ -1,0 +1,37 @@
+{
+  "name": "@code4u/knowledge-graph",
+  "version": "0.1.0",
+  "description": "Code Knowledge Graph engine for code4u.ai",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./schema": {
+      "import": "./dist/schema/index.js",
+      "types": "./dist/schema/index.d.ts"
+    }
+  },
+  "scripts": {
+    "dev": "tsup src/index.ts --watch --format esm --dts",
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "eslint": "^8.56.0",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.1"
+  }
+}
+

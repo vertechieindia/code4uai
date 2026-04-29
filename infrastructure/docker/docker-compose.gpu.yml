@@ -1,0 +1,129 @@
+# Docker Compose for GPU-enabled code4u.ai stack
+# Requires NVIDIA Container Toolkit
+version: "3.9"
+
+services:
+  # ===========================================================================
+  # Core API Service
+  # ===========================================================================
+  api:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/code4u
+      - REDIS_URL=redis://redis:6379/0
+      - QDRANT_URL=http://qdrant:6333
+      - LLM_VLLM_HOST=vllm
+      - LLM_VLLM_PORT=8001
+      - LLM_EMBEDDING_ENDPOINT=http://embedding:8002
+    depends_on:
+      - db
+      - redis
+      - qdrant
+      - vllm
+      - embedding
+    networks:
+      - code4u-network
+
+  # ===========================================================================
+  # vLLM Inference Server (GPU)
+  # ===========================================================================
+  vllm:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.vllm
+    ports:
+      - "8001:8000"
+    environment:
+      - HF_TOKEN=${HF_TOKEN}
+      - CUDA_VISIBLE_DEVICES=0,1
+    volumes:
+      - model-cache:/cache
+      - ./lora-adapters:/lora-adapters:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 2
+              capabilities: [gpu]
+    networks:
+      - code4u-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+  # ===========================================================================
+  # Embedding Service (can run on CPU or small GPU)
+  # ===========================================================================
+  embedding:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.embedding
+    ports:
+      - "8002:8002"
+    volumes:
+      - embedding-cache:/cache
+    networks:
+      - code4u-network
+
+  # ===========================================================================
+  # Database
+  # ===========================================================================
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: code4u
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - code4u-network
+
+  # ===========================================================================
+  # Redis (caching, sessions)
+  # ===========================================================================
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - code4u-network
+
+  # ===========================================================================
+  # Qdrant (vector database)
+  # ===========================================================================
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant-data:/qdrant/storage
+    networks:
+      - code4u-network
+    environment:
+      - QDRANT__SERVICE__GRPC_PORT=6334
+
+networks:
+  code4u-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  redis-data:
+  qdrant-data:
+  model-cache:
+  embedding-cache:
+

@@ -1,0 +1,454 @@
+/* ============================================
+   ANIMATED BACKGROUND EFFECTS
+   ============================================ */
+
+/* Binary Rain Animation */
+@keyframes binary-fall {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+
+.animate-binary-fall {
+  animation: binary-fall linear infinite;
+}
+
+/* Slow Binary Rain Animation - constant gentle speed */
+@keyframes binary-fall-slow {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  95% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+
+.animate-binary-fall-slow {
+  animation: binary-fall-slow linear infinite;
+}
+
+/* Floating Code Animation */
+@keyframes float-horizontal {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100vw);
+    opacity: 0;
+  }
+}
+
+.animate-float-horizontal {
+  animation: float-horizontal linear infinite;
+}
+
+/* Circuit Line Animations */
+@keyframes circuit-h {
+  0% {
+    stroke-dasharray: 0 1000;
+    opacity: 0;
+  }
+  50% {
+    stroke-dasharray: 500 1000;
+    opacity: 1;
+  }
+  100% {
+    stroke-dasharray: 1000 1000;
+    opacity: 0;
+  }
+}
+
+@keyframes circuit-v {
+  0% {
+    stroke-dasharray: 0 2000;
+    opacity: 0;
+  }
+  50% {
+    stroke-dasharray: 1000 2000;
+    opacity: 1;
+  }
+  100% {
+    stroke-dasharray: 2000 2000;
+    opacity: 0;
+  }
+}
+
+.animate-circuit-h {
+  animation: circuit-h 8s ease-in-out infinite;
+}
+
+.animate-circuit-v {
+  animation: circuit-v 12s ease-in-out infinite;
+}
+
+/* Node Pulse Animation */
+@keyframes pulse-node {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+}
+
+.animate-pulse-node {
+  animation: pulse-node 3s ease-in-out infinite;
+}
+
+/* Data Flow Animation */
+@keyframes data-flow {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--end-x), var(--end-y));
+    opacity: 0;
+  }
+}
+
+.animate-data-flow {
+  animation: data-flow linear infinite;
+}
+
+/* Particle Animation */
+@keyframes particle {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.1;
+  }
+  25% {
+    transform: translate(10px, -20px) scale(1.5);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translate(-5px, 10px) scale(0.8);
+    opacity: 0.2;
+  }
+  75% {
+    transform: translate(15px, 5px) scale(1.2);
+    opacity: 0.25;
+  }
+}
+
+.animate-particle {
+  animation: particle ease-in-out infinite;
+}
+
+/* Slow Pulse Animation */
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 8s ease-in-out infinite;
+}
+
+/* ============================================
+   BASE ANIMATIONS
+   ============================================ */
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-in-up {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(16, 185, 129, 0.6);
+  }
+}
+
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes scan-line {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+/* Animation Classes */
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out forwards;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out forwards;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-ping {
+  animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.cursor-blink {
+  animation: blink 1s step-end infinite;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* Animation Delays */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-1000 { animation-delay: 1000ms; }
+
+/* ============================================
+   TYPOGRAPHY & BASE STYLES
+   ============================================ */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: rgba(16, 185, 129, 0.3);
+  color: white;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-feature-settings: "ss01", "ss02", "cv01";
+  letter-spacing: -0.02em;
+}
+
+code {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', monospace;
+}
+
+/* Focus states */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 2px solid rgba(16, 185, 129, 0.5);
+  outline-offset: 2px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ============================================
+   GRADIENT UTILITIES
+   ============================================ */
+
+.gradient-text {
+  background: linear-gradient(135deg, #22c55e 0%, #3b82f6 50%, #a855f7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bg-gradient-radial {
+  background: radial-gradient(circle, var(--tw-gradient-from), var(--tw-gradient-to));
+}
+
+/* Gradient border effect */
+.gradient-border {
+  position: relative;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(16, 185, 129, 0.5));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+/* ============================================
+   HOVER EFFECTS
+   ============================================ */
+
+.hover-glow:hover {
+  box-shadow: 0 0 40px rgba(16, 185, 129, 0.3);
+}
+
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Glass morphism */
+.glass {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Shimmer loading effect */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Smooth transitions for all interactive elements */
+button, a, input {
+  transition: all 0.2s ease;
+}
+
+/* Focus ring for accessibility */
+.focus-ring:focus {
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+}
+
+/* ============================================
+   RESPONSIVE UTILITIES
+   ============================================ */
+
+@media (max-width: 768px) {
+  .text-responsive {
+    font-size: clamp(2rem, 5vw, 4rem);
+  }
+}
+
+/* ============================================
+   SCAN LINE EFFECT
+   ============================================ */
+
+.scan-line::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.5), transparent);
+  animation: scan-line 4s linear infinite;
+}

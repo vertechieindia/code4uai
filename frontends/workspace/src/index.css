@@ -1,0 +1,248 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Theme Variables ────────────────────────────────────────────── */
+
+:root {
+  --surface-0: #0a0a0f;
+  --surface-1: #0d1117;
+  --surface-2: #161b22;
+  --surface-3: #1c2333;
+  --border: rgba(255, 255, 255, 0.08);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --text-muted: rgba(255, 255, 255, 0.3);
+  --accent: #10b981;
+  --accent-subtle: rgba(16, 185, 129, 0.15);
+}
+
+.light {
+  --surface-0: #f8fafc;
+  --surface-1: #ffffff;
+  --surface-2: #f1f5f9;
+  --surface-3: #e2e8f0;
+  --border: rgba(0, 0, 0, 0.08);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --accent: #059669;
+  --accent-subtle: rgba(5, 150, 105, 0.1);
+}
+
+/* ── Base Styles ────────────────────────────────────────────────── */
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: var(--surface-0);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.light ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.light ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* ── Glassmorphism Utilities ────────────────────────────────────── */
+
+@layer utilities {
+  .glass {
+    background: rgba(13, 17, 23, 0.7);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-light {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  .glass-subtle {
+    background: rgba(13, 17, 23, 0.4);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 0 0 rgba(255, 255, 255, 0.04);
+  }
+
+  .glass-card-light {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, #10b981, #06b6d4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.03) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ── Agent Presence Indicator ───────────────────────────────────── */
+
+.agent-presence-gutter {
+  position: relative;
+}
+
+.agent-presence-gutter::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, #10b981, #06b6d4);
+  border-radius: 2px;
+  animation: presencePulse 2s ease-in-out infinite;
+}
+
+@keyframes presencePulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* ── Monaco Editor Decoration ───────────────────────────────────── */
+
+.agent-active-line {
+  background: rgba(16, 185, 129, 0.06) !important;
+  border-left: 3px solid rgba(16, 185, 129, 0.5) !important;
+}
+
+.agent-active-glyph {
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.8) 30%, transparent 70%);
+  border-radius: 50%;
+  width: 8px !important;
+  height: 8px !important;
+  margin-left: 4px;
+  margin-top: 6px;
+}
+
+/* ── Chat Markdown Overrides ────────────────────────────────────── */
+
+.chat-markdown p {
+  margin-bottom: 0.5em;
+}
+
+.chat-markdown p:last-child {
+  margin-bottom: 0;
+}
+
+.chat-markdown ul,
+.chat-markdown ol {
+  margin-bottom: 0.5em;
+}
+
+.chat-markdown pre {
+  margin: 0;
+}
+
+.chat-markdown hr {
+  border-color: rgba(255, 255, 255, 0.1);
+  margin: 0.75em 0;
+}
+
+/* ── Selection ──────────────────────────────────────────────────── */
+
+::selection {
+  background: rgba(16, 185, 129, 0.3);
+  color: inherit;
+}
+
+/* ── Focus Ring ─────────────────────────────────────────────────── */
+
+*:focus-visible {
+  outline: 2px solid rgba(16, 185, 129, 0.5);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Smooth Page Transitions ────────────────────────────────────── */
+
+.page-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+}
+
+.page-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.page-exit-active {
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 0.2s ease-in, transform 0.2s ease-in;
+}
+
+/* ── Code Block Styling ─────────────────────────────────────────── */
+
+.code-block {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}

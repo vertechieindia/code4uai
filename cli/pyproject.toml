@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "code4u-cli"
+version = "0.1.0"
+description = "code4u.ai CLI - Run agents from any terminal"
+authors = ["code4u.ai <hello@code4u.ai>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "code4u_cli", from = "src"}]
+
+[tool.poetry.scripts]
+code4u = "code4u_cli.main:app"
+c4u = "code4u_cli.main:app"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+typer = {extras = ["all"], version = "^0.9.0"}
+rich = "^13.7.0"
+httpx = "^0.26.0"
+websockets = "^12.0"
+pydantic = "^2.5.0"
+python-dotenv = "^1.0.0"
+watchfiles = "^0.21.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+pytest-asyncio = "^0.23.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+

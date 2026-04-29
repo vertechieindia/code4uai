@@ -1,0 +1,31 @@
+{
+  "name": "code4u.ai",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI-Native Engineering Platform for Enterprise-Scale Development",
+  "workspaces": [
+    "frontends/*",
+    "frontends/packages/*"
+  ],
+  "scripts": {
+    "dev:frontend": "pnpm --filter '@code4u/*' dev",
+    "build:frontend": "pnpm --filter '@code4u/*' build",
+    "lint:frontend": "pnpm --filter '@code4u/*' lint",
+    "typecheck": "pnpm --filter '@code4u/*' typecheck",
+    "clean": "rm -rf node_modules frontends/*/node_modules frontends/packages/*/node_modules"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  },
+  "pnpm": {
+    "overrides": {
+      "react": "^18.2.0",
+      "react-dom": "^18.2.0"
+    }
+  },
+  "packageManager": "pnpm@8.15.0",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

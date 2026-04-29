@@ -1,0 +1,39 @@
+# vLLM inference server for code4u.ai
+# Optimized for L40S / A100 GPUs
+FROM vllm/vllm-openai:v0.3.0
+
+# Set working directory
+WORKDIR /app
+
+# Environment variables for GPU optimization
+ENV CUDA_VISIBLE_DEVICES=0,1
+ENV VLLM_ATTENTION_BACKEND=FLASH_ATTN
+ENV TRANSFORMERS_CACHE=/cache/transformers
+ENV HF_HOME=/cache/huggingface
+
+# Create cache directories
+RUN mkdir -p /cache/transformers /cache/huggingface /lora-adapters
+
+# Copy LoRA adapters
+COPY lora-adapters/ /lora-adapters/
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Expose port
+EXPOSE 8000
+
+# Start vLLM server with code4u.ai configuration
+# Using Qwen2.5-Coder-32B as primary model
+CMD ["python", "-m", "vllm.entrypoints.openai.api_server", \
+    "--model", "Qwen/Qwen2.5-Coder-32B", \
+    "--enable-lora", \
+    "--lora-modules", "code4u=/lora-adapters/code4u", \
+    "--max-model-len", "8192", \
+    "--gpu-memory-utilization", "0.90", \
+    "--tensor-parallel-size", "2", \
+    "--trust-remote-code", \
+    "--host", "0.0.0.0", \
+    "--port", "8000"]
+
