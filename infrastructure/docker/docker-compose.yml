@@ -1,44 +1,52 @@
 version: "3.9"
+
 services:
   api:
     build:
       context: ../..
       dockerfile: infrastructure/docker/Dockerfile
+    container_name: code4u-api
     ports:
       - "8000:8000"
-    environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/code4u
-      - REDIS_URL=redis://redis:6379/0
-      - QDRANT_URL=http://qdrant:6333
+    env_file:
+      - ../../backend/.env
     depends_on:
       - db
       - redis
       - qdrant
-  
+    restart: unless-stopped
+
   db:
     image: postgres:16-alpine
+    container_name: code4u-db
     environment:
       POSTGRES_DB: code4u
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: codeuser
+      POSTGRES_PASSWORD: code4u
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-  
+    restart: unless-stopped
+
   redis:
     image: redis:7-alpine
+    container_name: code4u-redis
     ports:
       - "6379:6379"
-  
+    restart: unless-stopped
+
   qdrant:
     image: qdrant/qdrant:latest
+    container_name: code4u-qdrant
     ports:
       - "6333:6333"
       - "6334:6334"
     volumes:
       - qdrant_data:/qdrant/storage
+    restart: unless-stopped
 
 volumes:
   postgres_data:
   qdrant_data:
+ 
