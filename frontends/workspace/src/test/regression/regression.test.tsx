@@ -44,7 +44,7 @@ describe('Regression tests', () => {
     }
 
     window.history.replaceState({}, '', '/')
-    const { getByRole } = render(<App />)
+    render(<App />)
 
     await waitFor(() => {
       expect(screen.getByText(/welcome.*code4u\.ai/i)).toBeInTheDocument()

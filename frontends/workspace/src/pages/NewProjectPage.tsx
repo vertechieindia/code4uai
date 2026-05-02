@@ -3,8 +3,6 @@ import { useState } from 'react'
 import { 
   ArrowLeft,
   Plus,
-  FolderGit2,
-  Upload,
   Github,
   Code2,
   Sparkles

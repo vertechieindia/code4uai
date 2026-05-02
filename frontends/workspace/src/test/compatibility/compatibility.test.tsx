@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { screen, fireEvent, waitFor } from '@testing-library/react'
 import { renderWithProviders, setAuthStorage } from '../test-utils'
 import {
   DashboardPage,
@@ -373,7 +373,7 @@ describe('API URL configuration', () => {
     const urls = calls
       .map((c) => (typeof c[0] === 'string' ? c[0] : (c[0] as { url?: string })?.url))
       .filter(Boolean)
-    const hasRelative = urls.some((u) => u.startsWith('/') && !u.startsWith('//'))
+    const hasRelative = urls.some((u) => typeof u === 'string' && u.startsWith('/') && !u.startsWith('//'))
     expect(hasRelative).toBe(true)
   })
 
