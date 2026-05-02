@@ -1,9 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import { renderWithProviders } from '../test-utils'
 import LoginPage from '../../pages/LoginPage'
 import SignupPage from '../../pages/SignupPage'
-import IntegrationsPage from '../../pages/IntegrationsPage'
 
 beforeEach(() => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }))
@@ -64,7 +63,6 @@ describe('Accessibility', () => {
     it('primary buttons have sufficient contrast (visible text)', () => {
       renderWithProviders(<LoginPage />, { route: '/login' })
       const submitButton = screen.getByRole('button', { name: /sign in/i })
-      const styles = window.getComputedStyle(submitButton)
       expect(submitButton).toBeVisible()
       expect(submitButton.textContent).toBeTruthy()
     })

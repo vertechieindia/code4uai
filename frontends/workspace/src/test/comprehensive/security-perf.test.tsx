@@ -10,7 +10,7 @@ import { setAuthStorage, clearAuthStorage } from '../test-utils'
 import App from '../../App'
 
 const mockFetch = vi.fn()
-global.fetch = mockFetch
+globalThis.fetch = mockFetch
 
 beforeEach(() => {
   clearAuthStorage()
