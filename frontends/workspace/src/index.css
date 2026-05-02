@@ -4,6 +4,11 @@
 
 /* ── Theme Variables ────────────────────────────────────────────── */
 
+html {
+  background-color: #0a0a0f;
+  color: #fafafa;
+}
+
 :root {
   --surface-0: #0a0a0f;
   --surface-1: #0d1117;
@@ -36,7 +41,8 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   margin: 0;
   padding: 0;
-  background: var(--surface-0);
+  background: linear-gradient(to bottom right, #0a0a0f 0%, #0f0f1a 45%, #0a0a0f 100%);
+  background-color: var(--surface-0);
   color: var(--text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
   -webkit-font-smoothing: antialiased;
@@ -45,6 +51,14 @@ body {
 
 #root {
   min-height: 100vh;
+  background: linear-gradient(to bottom right, #0a0a0f 0%, #0f0f1a 45%, #0a0a0f 100%);
+}
+
+html.light body,
+html.light #root {
+  background: linear-gradient(to bottom right, #f8fafc 0%, #ffffff 50%, #f1f5f9 100%);
+  background-color: #f8fafc;
+  color: #0f172a;
 }
 
 /* ── Scrollbar ──────────────────────────────────────────────────── */

@@ -15,7 +15,11 @@ _bearer_scheme = HTTPBearer(auto_error=False)
 @lru_cache()
 def _auth_manager() -> AuthManager:
     settings = get_settings()
-    return AuthManager(jwt_secret=settings.jwt_secret_key.get_secret_value())
+    return AuthManager(
+        jwt_secret=settings.jwt_secret_key.get_secret_value(),
+        database_url=settings.database_url,
+        use_postgres=settings.auth_persist_users,
+    )
 
 
 def get_auth_manager() -> AuthManager:

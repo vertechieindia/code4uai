@@ -37,8 +37,16 @@ export default function SignupPage() {
     }
   }
 
-  const handleSocialSignup = (_provider: string) => {
-    setError('Social signup coming soon — use email/password for now')
+  const handleSocialSignup = (provider: string) => {
+    if (provider === 'google') {
+      window.location.href = '/api/v1/auth/google/login'
+      return
+    }
+    if (provider === 'github') {
+      window.location.href = '/api/v1/auth/github/login?flow=sso'
+      return
+    }
+    setError('This provider is not wired yet — use email/password, Google, or GitHub')
   }
 
   const passwordStrength = password.length >= 8 ? 'strong' : password.length >= 4 ? 'medium' : 'weak'

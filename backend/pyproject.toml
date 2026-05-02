@@ -42,12 +42,17 @@ watchdog = "^6.0.0"
 
 # Authentication
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+# passlib 1.7.4 expects bcrypt.__about__; bcrypt 4.1+ removed it
+bcrypt = ">=4.0.1,<4.1"
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 
 # Utilities
 PyYAML = "^6.0.1"
 toml = "^0.10.2"
 eval-type-backport = "^0.2.0"
+
+# Auth user persistence (sync driver; works with DATABASE_URL from .env)
+psycopg = { extras = ["binary"], version = "^3.1.18" }
 
 # ---- Heavyweight deps below: uncomment when deploying full platform ----
 # aiohttp = "^3.9.0"

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { 
   Mail, 
@@ -8,18 +8,56 @@ import {
   ArrowRight,
   ArrowLeft,
   Github,
-  Chrome
+  Chrome,
+  Loader2,
 } from 'lucide-react'
 import { useAuth } from '../AuthContext'
 
+function readOAuthSigningInFromHash(): boolean {
+  if (typeof window === 'undefined') return false
+  const h = window.location.hash
+  return h.startsWith('#c4u_token=') && h.length > '#c4u_token='.length
+}
+
 export default function LoginPage() {
   const navigate = useNavigate()
-  const { login, isLoading: authLoading } = useAuth()
+  const { login, oauthCompleteFromToken } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [oauthSigningIn, setOauthSigningIn] = useState(readOAuthSigningInFromHash)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const oauthErr = params.get('oauth_error')
+    if (oauthErr) {
+      setOauthSigningIn(false)
+      setError(decodeURIComponent(oauthErr))
+      window.history.replaceState(null, '', '/login')
+      return
+    }
+    const hash = window.location.hash
+    if (!hash.startsWith('#c4u_token=')) return
+    const jwt = hash.slice('#c4u_token='.length)
+    if (!jwt) {
+      setOauthSigningIn(false)
+      return
+    }
+    setOauthSigningIn(true)
+    window.history.replaceState(null, '', window.location.pathname + window.location.search)
+    void (async () => {
+      const result = await oauthCompleteFromToken(jwt)
+      if (result.ok) {
+        setOauthSigningIn(false)
+        navigate('/')
+      } else {
+        setOauthSigningIn(false)
+        setError(result.error || 'Sign-in failed')
+      }
+    })()
+  }, [navigate, oauthCompleteFromToken])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,12 +72,33 @@ export default function LoginPage() {
     }
   }
 
-  const handleSocialLogin = (_provider: string) => {
-    setError('Social login coming soon — use email/password for now')
+  const handleSocialLogin = (provider: string) => {
+    if (provider === 'google') {
+      window.location.href = '/api/v1/auth/google/login'
+      return
+    }
+    if (provider === 'github') {
+      window.location.href = '/api/v1/auth/github/login?flow=sso'
+      return
+    }
+    setError('This provider is not wired yet — use email/password, Google, or GitHub')
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a0a0f] via-[#0f0f1a] to-[#0a0a0f] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#0a0a0f] via-[#0f0f1a] to-[#0a0a0f] flex items-center justify-center p-4 relative">
+      {oauthSigningIn && (
+        <div
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-4 bg-[#0a0a0f]/95 backdrop-blur-md px-6"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <Loader2 className="h-10 w-10 animate-spin text-emerald-400" aria-hidden />
+          <p className="text-lg font-medium text-white">Signing you in…</p>
+          <p className="text-sm text-white/50 text-center max-w-sm">
+            Completing sign-in. This only takes a moment.
+          </p>
+        </div>
+      )}
       {/* Back to Home */}
       <a
         href="http://localhost:3000"
