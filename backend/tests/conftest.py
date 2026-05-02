@@ -1,6 +1,11 @@
 """Shared test fixtures for the code4u backend test suite."""
 from __future__ import annotations
 
+import os
+
+# Tests use in-memory auth unless explicitly overridden (avoids requiring Postgres).
+os.environ["AUTH_PERSIST_USERS"] = "false"
+
 import pytest
 from fastapi.testclient import TestClient
 from code4u.interfaces.api.app import app

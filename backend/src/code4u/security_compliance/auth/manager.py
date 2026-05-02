@@ -2,7 +2,10 @@ from __future__ import annotations
 """Identity management: password hashing, JWT tokens, user store, secret providers.
 
 Uses passlib (bcrypt) for password security and python-jose (HS256) for JWTs.
-The user store is in-memory for development; swap for a DB adapter in production.
+
+User store: in-memory by default. Set ``Settings.auth_persist_users`` (env
+``AUTH_PERSIST_USERS=true``) to persist register/login to Postgres table
+``code4u_auth_users`` (see ``postgres_store.py``).
 
 Secret providers:
   - ``EnvSecretProvider``   — reads from environment variables (default).
@@ -10,6 +13,7 @@ Secret providers:
   - ``AWSSecretProvider``   — reads from AWS Secrets Manager (mock for now).
 """
 import os
+import secrets
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -185,6 +189,24 @@ class UserRecord:
     is_active: bool = True
 
 
+def _user_from_pg_row(row: tuple) -> UserRecord:
+    created = row[6]
+    if isinstance(created, datetime):
+        cat = created.isoformat()
+    else:
+        cat = str(created) if created else datetime.utcnow().isoformat()
+    return UserRecord(
+        user_id=row[0],
+        email=row[1],
+        hashed_password=row[2],
+        name=row[3] or "",
+        company=row[4] or "",
+        tenant_id=row[5] or "",
+        created_at=cat,
+        is_active=bool(row[7]),
+    )
+
+
 class JWTManager:
     """Sign and verify HS256 JSON Web Tokens."""
 
@@ -214,13 +236,22 @@ class JWTManager:
 class AuthManager:
     """Manages user registration, login, and token lifecycle.
 
-    In-memory store for dev; production would use SQLAlchemy / asyncpg.
     Secrets are resolved through the ``SecretProvider`` chain so that
     JWT signing keys, API tokens, and other credentials are never
     hardcoded or stored in plain .env files in production.
+
+    Users are stored in-memory unless ``use_postgres`` is True and
+    ``database_url`` is set (see ``auth_persist_users`` in Settings).
     """
 
-    def __init__(self, jwt_secret: str = "", secret_provider: Optional[SecretProvider] = None):
+    def __init__(
+        self,
+        jwt_secret: str = "",
+        secret_provider: Optional[SecretProvider] = None,
+        *,
+        database_url: str = "",
+        use_postgres: bool = False,
+    ):
         self._secret_provider = secret_provider or create_secret_provider()
 
         # Resolve JWT secret: explicit arg > provider > fallback
@@ -232,11 +263,25 @@ class AuthManager:
             logger.warning("using_fallback_jwt_secret")
 
         self._jwt = JWTManager(resolved_secret)
-        self._users: Dict[str, UserRecord] = {}  # email -> UserRecord
-        logger.info(
-            "auth_manager_initialised",
-            secret_provider=self._secret_provider.provider_name(),
-        )
+        self._users: Dict[str, UserRecord] = {}  # email -> UserRecord (in-memory mode)
+        self._pg = None
+        if use_postgres:
+            if not (database_url or "").strip():
+                raise ValueError("auth_persist_users requires a non-empty database_url")
+            from code4u.security_compliance.auth.postgres_store import PostgresAuthStore
+
+            self._pg = PostgresAuthStore(database_url)
+            logger.info(
+                "auth_manager_initialised",
+                secret_provider=self._secret_provider.provider_name(),
+                user_store="postgres",
+            )
+        else:
+            logger.info(
+                "auth_manager_initialised",
+                secret_provider=self._secret_provider.provider_name(),
+                user_store="memory",
+            )
 
     def get_secret(self, key: str) -> Optional[str]:
         """Expose the provider chain for other services that need secrets."""
@@ -251,6 +296,28 @@ class AuthManager:
         name: str = "",
         company: str = "",
     ) -> UserRecord:
+        if self._pg is not None:
+            if self._pg.email_exists(email):
+                raise ValueError("email_already_registered")
+            user = UserRecord(
+                user_id=str(uuid.uuid4()),
+                email=email.strip().lower(),
+                hashed_password=pwd_context.hash(password),
+                name=name,
+                company=company,
+                tenant_id=f"tenant_{uuid.uuid4().hex[:8]}",
+            )
+            self._pg.insert_user(
+                user_id=user.user_id,
+                email=user.email,
+                hashed_password=user.hashed_password,
+                name=user.name,
+                company=user.company,
+                tenant_id=user.tenant_id,
+            )
+            logger.info("user_registered", email=user.email, tenant_id=user.tenant_id)
+            return user
+
         if email in self._users:
             raise ValueError("email_already_registered")
 
@@ -270,10 +337,20 @@ class AuthManager:
 
     def authenticate(self, email: str, password: str) -> Optional[str]:
         """Validate credentials and return a signed JWT, or None."""
-        user = self._users.get(email)
-        if not user or not pwd_context.verify(password, user.hashed_password):
-            logger.warning("auth_failed", email=email)
-            return None
+        if self._pg is not None:
+            row = self._pg.fetch_by_email(email)
+            if not row:
+                logger.warning("auth_failed", email=email)
+                return None
+            user = _user_from_pg_row(row)
+            if not pwd_context.verify(password, user.hashed_password):
+                logger.warning("auth_failed", email=email)
+                return None
+        else:
+            user = self._users.get(email)
+            if not user or not pwd_context.verify(password, user.hashed_password):
+                logger.warning("auth_failed", email=email)
+                return None
 
         token = self._jwt.create_token({
             "sub": user.user_id,
@@ -291,10 +368,40 @@ class AuthManager:
     # ── Lookup ────────────────────────────────────────────────────
 
     def get_user_by_email(self, email: str) -> Optional[UserRecord]:
+        if self._pg is not None:
+            row = self._pg.fetch_by_email(email)
+            return _user_from_pg_row(row) if row else None
         return self._users.get(email)
 
     def get_user_by_id(self, user_id: str) -> Optional[UserRecord]:
+        if self._pg is not None:
+            row = self._pg.fetch_by_id(user_id)
+            return _user_from_pg_row(row) if row else None
         for u in self._users.values():
             if u.user_id == user_id:
                 return u
         return None
+
+    def mint_token_for_user(self, user: UserRecord) -> str:
+        """Issue a JWT for an already verified user (e.g. OAuth)."""
+        return self._jwt.create_token({
+            "sub": user.user_id,
+            "email": user.email,
+            "tenant_id": user.tenant_id,
+        })
+
+    def get_or_create_oauth_user(self, email: str, name: str = "", company: str = "") -> UserRecord:
+        """Find user by email or register with a random password (OAuth-only account)."""
+        email_norm = email.strip().lower()
+        if not email_norm:
+            raise ValueError("email_required")
+        existing = self.get_user_by_email(email_norm)
+        if existing:
+            return existing
+        display_name = (name or "").strip() or email_norm.split("@", 1)[0]
+        return self.register(
+            email=email_norm,
+            password=secrets.token_urlsafe(48),
+            name=display_name,
+            company=company or "",
+        )

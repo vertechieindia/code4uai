@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     host: str = "0.0.0.0"
     port: int = 8000
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/code4u"
+    # When True, /auth/register and /auth/login use Postgres table code4u_auth_users.
+    auth_persist_users: bool = False
     redis_url: str = "redis://localhost:6379/0"
     qdrant_url: str = "http://localhost:6333"
     openai_api_key: Optional[SecretStr] = None
@@ -24,7 +26,13 @@ class Settings(BaseSettings):
     cors_origins: List[str] = ["http://localhost:3000", "http://localhost:5173"]
     github_client_id: str = ""
     github_client_secret: SecretStr = SecretStr("")
-    github_redirect_uri: str = "http://localhost:5173/api/v1/auth/github/callback"
+    github_redirect_uri: str = "http://localhost:3000/api/v1/auth/github/callback"
+    github_oauth_success_redirect: str = "http://localhost:3000/login"
+    # Google Sign-In (OAuth 2.0) — redirect URI must match Google Cloud Console exactly.
+    google_client_id: str = ""
+    google_client_secret: SecretStr = SecretStr("")
+    google_redirect_uri: str = "http://localhost:3000/api/v1/auth/google/callback"
+    google_oauth_success_redirect: str = "http://localhost:3000/login"
     repo_clone_base: str = "/tmp/code4u-repos"
 
     # Air-gapped mode — blocks all external API calls, forces local models

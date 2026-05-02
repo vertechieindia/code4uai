@@ -15,6 +15,8 @@ interface AuthContextType {
   isLoading: boolean
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>
   register: (email: string, password: string, name: string, company?: string) => Promise<{ ok: boolean; error?: string }>
+  /** After Google OAuth redirect (`#c4u_token=...`), validate JWT via `/auth/me` and persist session. */
+  oauthCompleteFromToken: (jwt: string) => Promise<{ ok: boolean; error?: string }>
   logout: () => void
 }
 
@@ -108,12 +110,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const oauthCompleteFromToken = async (
+    jwt: string,
+  ): Promise<{ ok: boolean; error?: string }> => {
+    setIsLoading(true)
+    try {
+      const res = await fetch('/api/v1/auth/me', {
+        headers: { Authorization: `Bearer ${jwt}` },
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        return { ok: false, error: data.detail || 'OAuth session invalid' }
+      }
+      const data = await res.json()
+      persistAuth(jwt, {
+        user_id: data.user_id,
+        email: data.email,
+        name: data.name,
+        tenant_id: data.tenant_id,
+      })
+      return { ok: true }
+    } catch {
+      return { ok: false, error: 'Network error — is the backend running?' }
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const logout = () => {
     clearAuth()
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, isAuthenticated, isLoading, login, register, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        isAuthenticated,
+        isLoading,
+        login,
+        register,
+        oauthCompleteFromToken,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )

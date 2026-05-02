@@ -28,6 +28,7 @@ app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origins, allow_cr
 PUBLIC_PATHS = frozenset({
     "/", "/health", "/docs", "/redoc", "/openapi.json",
     "/api/v1/auth/login", "/api/v1/auth/register",
+    "/api/v1/auth/google/login", "/api/v1/auth/google/callback",
     "/api/v1/auth/github/login", "/api/v1/auth/github/callback",
     "/api/v1/webhooks/git-event",
     "/api/v1/health/doctor",
