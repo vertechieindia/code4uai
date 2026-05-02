@@ -8,6 +8,7 @@ RUN poetry install --no-dev --no-root
 
 FROM base AS runtime
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
 COPY backend/src /app/src
 ENV PYTHONPATH=/app/src
 EXPOSE 8000
